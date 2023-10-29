@@ -2,29 +2,30 @@ using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
 using System.Linq;
+using qs.Model;
 
 namespace qs.QuestionSystem
 {
     public class QuestionSystem : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _questionText;
-
         [SerializeField] private QuestionList _questionLists = new QuestionList();
-        [SerializeField] private QuestionList.ChooseList _chosenList;
-        [SerializeField] private bool _excludeDuplicates;
 
         private List<string> selectedList;
-
-        [SerializeField] private int _previousQIndex = -2;
+        private GameSession _gameSession;
+        private int _previousQIndex = -2;
 
         private void Start()
         {
-            ChooseInDropDown(0);
+            _gameSession = FindObjectOfType<GameSession>();
+
+            ChooseInDropDown((int)_gameSession.Data.ChosenList);
+            CheckSelectedList();
         }
 
         public void CheckSelectedList()
         {
-            switch (_chosenList)
+            switch (_gameSession.Data.ChosenList)
             {
                 case QuestionList.ChooseList.CommonQuestions:
                     selectedList = _questionLists.commonQuestion;
@@ -36,13 +37,13 @@ namespace qs.QuestionSystem
         }
 
         public void ChooseInDropDown(int num) =>
-            _chosenList = (QuestionList.ChooseList)num;
+            _gameSession.Data.ChosenList = (QuestionList.ChooseList)num;
 
         public void TextNewQuestion(int randomNumber)
         {
             _previousQIndex = -2;
 
-            if (_excludeDuplicates && IsQuestionListComplete())
+            if (_gameSession.Data.ExcludeDuplicates && IsQuestionListComplete())
             {
                 _questionText.text = "Ви прочитали всі запитання!";
                 return;
@@ -50,7 +51,7 @@ namespace qs.QuestionSystem
 
             if (_questionLists.PreviousQuestion.Contains(selectedList[randomNumber]))
             {
-                if (!_excludeDuplicates)
+                if (!_gameSession.Data.ExcludeDuplicates)
                 {
                     _questionLists.PreviousQuestion.Add(selectedList[randomNumber]);
                     _questionText.text = selectedList[randomNumber];
@@ -69,7 +70,6 @@ namespace qs.QuestionSystem
 
         public void GenerateNewQuestion()
         {
-            CheckSelectedList();
             var questionCount = selectedList.Count;
             var chooseRandomQuestion = Random.Range(0, questionCount);
 
@@ -106,9 +106,6 @@ namespace qs.QuestionSystem
             _questionText.text = _questionLists.PreviousQuestion[index];
         }
 
-        public void HaveToCheckDuplicates(bool checkedBool) =>
-            _excludeDuplicates = checkedBool;
-
         private bool IsQuestionListComplete()
         {
             if (selectedList != null && _questionLists.PreviousQuestion != null)
@@ -118,19 +115,19 @@ namespace qs.QuestionSystem
             }
             return false;
         }
+    }
 
-        [System.Serializable]
-        public class QuestionList
+    [System.Serializable]
+    public class QuestionList
+    {
+        public enum ChooseList
         {
-            public enum ChooseList
-            {
-                CommonQuestions, intimateIssuesQuestions
-            };
+            CommonQuestions, intimateIssuesQuestions
+        };
 
-            public List<string> commonQuestion = new List<string>();
-            public List<string> intimateIssues = new List<string>();
+        public List<string> commonQuestion = new List<string>();
+        public List<string> intimateIssues = new List<string>();
 
-            public List<string> PreviousQuestion = new List<string>();
-        }
+        public List<string> PreviousQuestion = new List<string>();
     }
 }
