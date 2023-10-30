@@ -10,6 +10,7 @@ namespace qs.QuestionSystem
     {
         [SerializeField] private TextMeshProUGUI _questionText;
         [SerializeField] private QuestionList _questionLists = new QuestionList();
+        [SerializeField] private string _textIfQuestionsEnded = "Більше немає запитань!";
 
         private List<string> selectedList;
         private GameSession _gameSession;
@@ -18,6 +19,7 @@ namespace qs.QuestionSystem
         private void Start()
         {
             _gameSession = FindObjectOfType<GameSession>();
+            _questionLists.allCombined = _questionLists.commonQuestion.Concat(_questionLists.intimateIssues).ToList();
 
             ChooseInDropDown((int)_gameSession.Data.ChosenList);
             CheckSelectedList();
@@ -33,6 +35,10 @@ namespace qs.QuestionSystem
                 case QuestionList.ChooseList.intimateIssuesQuestions:
                     selectedList = _questionLists.intimateIssues;
                     break;
+
+                case QuestionList.ChooseList.AllCombined:
+                    selectedList = _questionLists.allCombined;
+                    break;
             }
         }
 
@@ -45,7 +51,7 @@ namespace qs.QuestionSystem
 
             if (_gameSession.Data.ExcludeDuplicates && IsQuestionListComplete())
             {
-                _questionText.text = "Ви прочитали всі запитання!";
+                _questionText.text = _textIfQuestionsEnded;
                 return;
             }
 
@@ -122,11 +128,12 @@ namespace qs.QuestionSystem
     {
         public enum ChooseList
         {
-            CommonQuestions, intimateIssuesQuestions
+            CommonQuestions, intimateIssuesQuestions, AllCombined
         };
 
         public List<string> commonQuestion = new List<string>();
         public List<string> intimateIssues = new List<string>();
+        public List<string> allCombined = new List<string>();
 
         public List<string> PreviousQuestion = new List<string>();
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using qs.QuestionSystem;
+using UnityEngine.UI;
 
 namespace qs.Model
 {
@@ -32,10 +33,9 @@ namespace qs.Model
             return false;
         }
 
-        public void CheckExcludeDublicates(bool checkedBool)
-        {
+        public void CheckExcludeDublicates(bool checkedBool) =>
             _data.ExcludeDuplicates = checkedBool;
-        }
+
         public void ChooseInDropDown(int num) =>
             _data.ChosenList = (QuestionList.ChooseList)num;
     }
